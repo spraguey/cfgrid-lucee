@@ -102,4 +102,4 @@ In dealers.cfc, you would have a function...
 </cffunction>
 ```
 
-So, this should be cross-compatible with Adobe CF, EXCEPT for switching out your QueryConvertForGrid with QueryContentForDatatables.
+So, this should be cross-compatible with Adobe CF, EXCEPT for switching out your QueryConvertForGrid with QueryConvertForDatatables.
