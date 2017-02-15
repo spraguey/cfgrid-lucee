@@ -98,7 +98,7 @@ In dealers.cfc, you would have a function...
         ORDER BY #form.gridsortcolumn# #form.gridsortdir#
         </cfquery>
                 
-        <cfreturn QueryConvertForDatatables(returnQuery,form)> 
+        <cfreturn QueryConvertForDatatables(returnQry,form)> 
 </cffunction>
 ```
 
