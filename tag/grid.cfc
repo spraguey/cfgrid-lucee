@@ -45,7 +45,7 @@
 		<!--- this sets the defaults for undefined attributes.  Not sure why this is needed. --->
 		<cfset variables.attributes=setAttributes(arguments.attributes) />
 
-		<cfif NOT isQuery(attributes.query)>
+		<cfif NOT isQuery(attributes.query) and attributes.query GT "">
 			<cfset attributes.query = caller[attributes.query] />
 		</cfif>
 
