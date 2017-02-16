@@ -5,7 +5,7 @@
 		name:			{required:true,type:"string"},
 		format:      	{required:false,type:"string",default:"html"},
 		bind:  			{required:false,type:"string",default:"",hint:""},	
-		query: 			{required:false,type:"query",default:"",hint:""},	
+		query: 			{required:false,type:"any",default:"",hint:""},	
 		width: 			{required:false,type:"string",default:"100%",hint:""},	
 		href: 			{required:false,type:"string",default:"",hint:""},	
 		hrefKey: 		{required:false,type:"string",default:"",hint:""},	
@@ -44,6 +44,10 @@
 
 		<!--- this sets the defaults for undefined attributes.  Not sure why this is needed. --->
 		<cfset variables.attributes=setAttributes(arguments.attributes) />
+
+		<cfif NOT isQuery(attributes.query)>
+			<cfset attributes.query = caller[attributes.query] />
+		</cfif>
 
 		<cfif not variables.hasEndTag>
 			<cfset onEndTag(variables.attributes,caller,"") />
