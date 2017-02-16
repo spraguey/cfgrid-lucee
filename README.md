@@ -5,7 +5,7 @@ This is a BASIC cfgrid and cfgridcolumn implementation for Lucee. It is intended
 
 ## Installation
 1. Download and copy the files to your context directory ('/lucee-server/context/library' for server, or '/WEB-INF/lucee/library' for a single site/context). Works for both the server or an individual web context.
-1. cfgrid.cfc and cfgridcolumn.cfc go in the 'tag' directory, and QueryConvertForDatatables.cfm goes in the 'function' directory
+1. cfgrid.cfc and cfgridcolumn.cfc go in the 'tag' directory, and QueryConvertForDatatables.cfm and QueryConvertForGrid.cfm go in the 'function' directory. See note about QueryConvertForGrid() below if you do not want to replace the native Lucee tag for this.
 1. Restart Lucee.
 
 ## &lt;CFGRID&gt;
@@ -59,13 +59,25 @@ Supported Attributes
 
 See http://cfdocs.org/cfgridcolumn for usage details.
 
+## QueryConvertForGrid()
+
+This is a REPLACEMENT for QueryConvertForGrid() in Lucee. You will need to use this, or QueryConvertForDatatables if you are binding (using ajax) for your dataset. 
+
+You can use this if you are unable, or don't want to, change all your QueryConvertForGrid functions to QueryConvertForDatatables. In this project, it is really just a wrapper for the QueryConvertForDatatables function.
+
+Arguments are the same as defined at http://cfdocs.org/queryconvertforgrid, but arguments 2 and 3 are basically ignored and it will use the DataTables.js form scope instead.
+
+NOTE: If you do not want to replace the built-in Lucee tag for this, you don't have to include queryconvertforgrid.cfm in your installation. You can use queryconvertfordatatables() instead.
+
 ## QueryConvertForDatatables()
 
-This is the equivalent of QueryConvertForGrid() in Adobe CF. You will need to use this if you are binding (using ajax) for your dataset. 
+This is the equivalent of QueryConvertForGrid() in Adobe CF, but uses Datatables. You will need to use this if you are binding (using ajax) for your dataset. 
 
 QueryConvertForDatatables(query,datatables form scope)
 
-It will pass in all of the Datatables parameters needed and produce the JSON object that is used by datatables.
+If you don't explicitly pass in the datatables form scope (second argument), it will use the form scope for the request.
+
+It will pass in all of the Datatables parameters needed and produce the JSON object that is used by Datatables.
 
 ## EXAMPLE
 
@@ -98,8 +110,6 @@ In dealers.cfc, you would have a function...
         ORDER BY #form.gridsortcolumn# #form.gridsortdir#
         </cfquery>
                 
-        <cfreturn QueryConvertForDatatables(returnQry,form)> 
+        <cfreturn QueryConvertForGrid(returnQry)> 
 </cffunction>
 ```
-
-So, this should be cross-compatible with Adobe CF, EXCEPT for switching out your QueryConvertForGrid with QueryConvertForDatatables.
