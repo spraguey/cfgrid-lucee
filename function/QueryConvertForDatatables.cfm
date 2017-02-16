@@ -1,5 +1,5 @@
 <cffunction name="QueryConvertForDatatables" returntype="any" output="false" returnformat="json">
-	<cfargument name="query" type="query" required="true" /
+	<cfargument name="query" type="query" required="true" />
 	<cfargument name="dtformscope" type="struct" required="false" default="#structNew()#" />
 	
 	<cfif structIsEmpty(arguments.dtformscope)>
