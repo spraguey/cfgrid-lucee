@@ -2,6 +2,10 @@
 	<cfargument name="query" type="query" required="true" />
 	<cfargument name="dtformscope" type="struct" required="true" />
 
+	<cfif not structKeyExists(arguments.dtformscope,"columns")>
+		<cfthrow type="Application" message="DataTables form scope must be present and passed in to use the QueryConvertForDatatables function." />
+	</cfif>
+
 	<!--- first, manipulate the query based on the data passed through the dataTables post --->
 	<cfquery name="arguments.query" dbtype="query">
 		SELECT * FROM arguments.query
