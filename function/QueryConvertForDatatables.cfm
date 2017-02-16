@@ -1,6 +1,11 @@
 <cffunction name="QueryConvertForDatatables" returntype="any" output="false" returnformat="json">
-	<cfargument name="query" type="query" required="true" />
-	<cfargument name="dtformscope" type="struct" required="true" />
+	<cfargument name="query" type="query" required="true" /
+	<cfargument name="dtformscope" type="struct" required="false" default="#structNew()#" />
+	
+	<cfif structIsEmpty(arguments.dtformscope)>
+		<!-- if the passed form scope is empty (not passed), use the real form scope --->
+		<cfset arguments.dtformscope  = form />
+	</cfif>
 
 	<cfif not structKeyExists(arguments.dtformscope,"columns")>
 		<cfthrow type="Application" message="DataTables form scope must be present and passed in to use the QueryConvertForDatatables function." />
