@@ -23,7 +23,8 @@
 		includeJQuery:    	{required:false,type:"boolean",default:true,hint:"Set to false to use your own jQuery (1.12+)."},
 		includeBootstrap:   {required:false,type:"boolean",default:true,hint:"Set to false to use your own css for styling."},
 		customJS:      	{required:false,type:"any",default:"",hint:"Pass a single path to a js file, or an array of paths."},
-		customCSS:      	{required:false,type:"any",default:"",hint:"Pass a single path to a css file, or an array of paths."}
+		customCSS:      	{required:false,type:"any",default:"",hint:"Pass a single path to a css file, or an array of paths."},
+		lengthChange:		{required:false,type="boolean",default=true,hint:"Show the per-page pulldown"}
 	}/>
 	<cfset variables.children = [] />
 	<cfset _log = [] />
@@ -245,12 +246,15 @@
 				<script>
 					$(document).ready(function() {
 						$('###attributes.name#').DataTable({
-							<cfif attributes.bind GT "">#buildBindConfig(attributes.bind)#</cfif>
+							<cfif attributes.bind GT ""><cfset binddata = getBindArgs(attributes.bind) />
+							#buildBindConfig(binddata)#
+							</cfif>
 							"columnDefs": #buildColumnConfig(attributes.children)#,
 							"pageLength" : #attributes.pagesize#,
 							"autoWidth" : #attributes.autowidth#,
 							"ordering" : #truefalsetext(attributes.sort)#,
-							"order" : [[#listFindNoCase(attributes.columns,attributes.firstVisibleColumn)-1#, 'asc']],
+							"lengthChange": #truefalsetext(attributes.lengthChange)#,
+							<cfif listFindNoCase(attributes.columns,attributes.firstVisibleColumn)>"order" : [[#listFindNoCase(attributes.columns,attributes.firstVisibleColumn)-1#, 'asc']],</cfif>
 							"searching" : #truefalsetext(attributes.search)#,
 							"drawCallback": function(settings) {
 								<cfif attributes.href GT "">
@@ -269,6 +273,24 @@
 										$(this).siblings().andSelf().css('backgroundColor','inherit').css('cursor','auto');
 									});
 								</cfif>
+								<!--- Listeners, if they exist. Initial value is passed in buildBindConfig, but these are listeners for changes. --->
+				                <cfif attributes.bind GT "">
+				                <cfloop from="1" to="#arraylen(binddata.args)#" index="a">
+									<cfif NOT listFindNoCase("{cfgridpage},{cfgridpagesize},{cfgridsortcolumn},{cfgridsortdirection}",binddata.args[a])>
+										<cfif left(binddata.args[a],1) IS "{" AND right(binddata.args[a],1) IS "}">
+											<!--- for items with a @ listener --->
+											<cfset bindid = rereplace(getToken(binddata.args[a],1,"@"),"[\}\{]","","ALL") />
+											<cfset bindevent = rereplace(getToken(binddata.args[a],2,"@"),"[\}\{]","","ALL") />
+											<cfif bindevent IS "">
+												<cfset bindevent="change" />
+											</cfif>
+											$('###jsstringformat(bindid)#').off('#bindevent#').on('#bindevent#',function() {
+												$('###attributes.name#').DataTable().ajax.reload();
+											});
+										</cfif>
+									</cfif> 
+						        </cfloop>
+						        </cfif>
 								#attributes.onload#
 							}
 						});	
@@ -317,19 +339,42 @@
 		<cfreturn "[" & rtn & "]" />
 	</cffunction>
 
+	<!--- Get the arguments that were passed in to the bind --->
+	<cffunction name="getBindArgs" output="false">
+		<cfargument name="bindString" type="string" />
+		<cfset var binddata = structnew() />
+		<cfset var ajaxpath = replacenocase(arguments.bindstring,"cfc:","") />
+		<cfset var methodAndArgs = listLast(ajaxpath,".") />
+		<cfset var cfcPath = replacenocase(ajaxpath,'.'&methodAndArgs,"") />
+		<cfset var method = getToken(methodAndArgs,1,"(") />
+		<cfset var args = getToken(methodAndArgs,2,"(") />
+		<cfset var loadCFC = createObject('component',cfcPath) />
+		<cfset var functionmeta = GetMetaData( loadCFC[method] ) />
+		
+		<cfif len(args) GT 1>
+			<cfset args = left(args,len(args)-1) />
+		<cfelse>
+			<cfset args = "" />
+		</cfif>
+		<cfset binddata.args = listToArray(args,",") />
+		
+		<cfset ajaxpath = "/" & replacenocase(ajaxpath,".","/","ALL") />
+		<cfset binddata.ajaxpath = replacenocase(ajaxpath,"/#methodAndArgs#",".cfc?method=#method#") />
+
+		<cfset binddata.parameters = functionmeta.parameters />
+
+		<cfreturn binddata />
+
+	</cffunction>
+
 	<!--- set up the the column config --->
 	<cffunction name="buildBindConfig" output="false">
-		<cfargument name="bindstring" type="string" />
-		<cfset var rtn = "" />
-		<cfset var ajaxpath = replace(arguments.bindstring,"cfc:","") />
-		<cfset var methodAndArgs = listLast(ajaxpath,".") />
-		<cfset var method = getToken(methodAndArgs,1,"(") />
-		<cfset ajaxpath = "/" & replace(ajaxpath,".","/","ALL") />
-		<cfset ajaxpath = replace(ajaxpath,"/#methodAndArgs#",".cfc?method=#method#") />
+		<cfargument name="binddata" type="struct" />
+		<Cfset var binddata = arguments.binddata />
 		<cfsavecontent variable="rtn"><cfoutput>
 		"processing": true,
         "serverSide": true,
-        "ajax": {"url": "#ajaxpath#",
+        "ajax": {"url": "#binddata.ajaxpath#",
             "type": "POST",
             "data": function ( d ) {
                 d.columns = '#attributes.columns#';
@@ -338,6 +383,18 @@
                 d.page = 1;
                 d.gridsortcolumn = '#attributes.firstVisibleColumn#';
                 d.gridsortdir = 'ASC';
+                <!--- Here, we will pass anything that was in the bind arguments. The built-in 
+                CFGRID {cfgrid...} values are ignored because they are not valid for Datatables. --->
+                <cfloop from="1" to="#arraylen(binddata.args)#" index="a">
+					<cfif NOT listFindNoCase("{cfgridpage},{cfgridpagesize},{cfgridsortcolumn},{cfgridsortdirection}",binddata.args[a])>
+						<cfif left(binddata.args[a],1) IS "{" AND right(binddata.args[a],1) IS "}">
+							<!--- for items with a @ listener, we will pass the initial value here, but set up the listener in the callback later --->
+							d.#binddata.parameters[a].name#=$('###jsstringformat(rereplace(getToken(binddata.args[a],1,"@"),"[\}\{]","","ALL"))#').val();
+						<cfelse>
+							d.#binddata.parameters[a].name#='#jsstringformat(replace(binddata.args[a],"'","","ALL"))#';
+						</cfif>
+					</cfif> 
+		        </cfloop>
             }
         },	
     	</cfoutput></cfsavecontent>
