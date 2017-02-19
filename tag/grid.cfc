@@ -20,11 +20,13 @@
 		jsAtBottom:      	{required:false,type:"boolean",default:true,hint:"Put the JavaScript includes inside the closing BODY tag."},
 		cssAtBottom:      	{required:false,type:"boolean",default:true,hint:"Put the CSS includes inside the closing BODY tag."},
 		includeDatatables:  {required:false,type:"boolean",default:true,hint:"Set to false to use your own datatables js."},
+		includeDatatablesCSS:  {required:false,type:"boolean",default:true,hint:"Set to false to use your own styles."},
 		includeJQuery:    	{required:false,type:"boolean",default:true,hint:"Set to false to use your own jQuery (1.12+)."},
-		includeBootstrap:   {required:false,type:"boolean",default:true,hint:"Set to false to use your own css for styling."},
+		includeBootstrap:   {required:false,type:"boolean",default:false,hint:"Set to true to use Bootstrap for styling."},
 		customJS:      	{required:false,type:"any",default:"",hint:"Pass a single path to a js file, or an array of paths."},
 		customCSS:      	{required:false,type:"any",default:"",hint:"Pass a single path to a css file, or an array of paths."},
-		lengthChange:		{required:false,type="boolean",default=true,hint:"Show the per-page pulldown"}
+		lengthChange:		{required:false,type="boolean",default=true,hint:"Show the per-page pulldown"},
+		compact:			{required:false,type="boolean",default=true,hint:"Set false for more padding/spacing."}
 	}/>
 	<cfset variables.children = [] />
 	<cfset _log = [] />
@@ -120,7 +122,7 @@
 
 		<cfsavecontent variable="grid">
 		<cfoutput>
-			<table name="#attributes.name#" id="#attributes.name#" class="table table-striped table-bordered" cellspacing="0" width="#attributes.width#" <cfif attributes.style GT "">style="#attributes.style#"</cfif>>
+			<table name="#attributes.name#" id="#attributes.name#" class="display<cfif attributes.compact> compact</cfif>" cellspacing="0" width="#attributes.width#" <cfif attributes.style GT "">style="#attributes.style#"</cfif>>
 				<thead><tr>
 				<cfif arrayIsEmpty(attributes.children)>
 					<cfif isQuery(attributes.query)>
@@ -216,6 +218,9 @@
 		  		<cfif attributes.includeBootstrap>
 		  			<link type="text/css" href="//cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css" rel="stylesheet" />
 					<link type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+				</cfif>
+				<cfif attributes.includeDatatablesCSS>
+					<link type="text/css" href="//cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" rel="stylesheet" />
 				</cfif>
 				<cfif isArray(attributes.customCSS)>
 		  			<cfloop array="#attributes.customCSS#" index="a">
