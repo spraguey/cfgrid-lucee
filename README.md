@@ -87,7 +87,7 @@ This library mimics the Adobe CF binding to form elements, but not binding to co
 
 Examples of binding:
 - bind="cfc:dealers.getGrid({mypickbox})", any time the form field with id="mypickbox" changes, the grid refreshes and passes that value to the CFC.
-- bind="cfc:dealers.getGrid({mytextbox@keypress})", any time a key is pressed form field with id="mytextbox, the grid refreshes and passes that value to the CFC.
+- bind="cfc:dealers.getGrid({mytextbox@keypress})", any time a key is pressed in the form field with id="mytextbox", the grid refreshes and passes that value to the CFC.
 
 ## SIMPLE QUERY EXAMPLE
 
