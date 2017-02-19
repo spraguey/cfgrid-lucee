@@ -31,19 +31,21 @@ This can be a standard URL, or you can use href="javascript:myfunction();" to ha
 
 See http://cfdocs.org/cfgrid for usage details.
 
-Custom Attributes for Lucee!
+Custom Attributes for this Lucee version!
 
 - search="yes/no", show or hide the search box (default, yes)
 - jsAtBottom="yes/no", place JavaScript inside bottom BODY tag (default, yes)
 - cssAtBottom="yes/no", place CSS inside bottom BODY tag (default, yes)
 - includeJQuery="yes/no", if you already have jQuery on your page, set to no (default, yes)
 - includeDatatables="yes/no", if you already have DataTables.js on your page, set to no (default, yes)
-- includeBootstrap="yes/no", if you already have Bootstrap on your page, set to no (default, yes)
-  * Bootstrap is just the default for styling. You can include other styles if you want.
+- includeDatatablesCSS="yes/no", if you already have DataTables css, or want something custom, set to no (default, yes)
+- includeBootstrap="yes/no", Use Bootstrap.js to style (default, no)
 - customJS="path or array of paths", custom JavaScript files to include on the page. For example, jQuery UI. (default, none)
 - customCSS="path or array of paths", custom CSS files to include on the page. For example, your custom Datatables styles. (default, none)
+- lengthChange="yes/no", Show the select box to pick items per page (default, yes)
+- compact="yes/no", For Datatables CSS, use the compact style, takes up less space (default, yes)
 
-You can use includeBootstrap="no" and then customCSS="//cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css", for example, to use the default Datatables styles.
+You can use includeDatatablesCSS="no" and then customCSS="http://pathto/my.css", for example, to use your own style sheet or custom Datatables CSS.
 
 
 ## &lt;CFGRIDCOLUMN&gt;
@@ -79,7 +81,38 @@ If you don't explicitly pass in the datatables form scope (second argument), it 
 
 It will pass in all of the Datatables parameters needed and produce the JSON object that is used by Datatables.
 
-## EXAMPLE
+## Binding Form Elements
+
+This library mimics the Adobe CF binding to form elements, but not binding to columns. 
+
+Examples of binding:
+- bind="cfc:dealers.getGrid({mypickbox})", any time the form field with id="mypickbox" changes, the grid refreshes and passes that value to the CFC.
+- bind="cfc:dealers.getGrid({mytextbox@keypress})", any time a key is pressed form field with id="mytextbox, the grid refreshes and passes that value to the CFC.
+
+## SIMPLE QUERY EXAMPLE
+
+```html
+<cfquery name="getdata" datasource="mydsn">
+SELECT id,name,city,state
+FROM dealers
+</cfquery>
+<cfgrid format="html"
+      name="maingrid" 
+      query="getdata" 
+      pagesize="10" 
+      autowidth="true" 
+      href="thispage.cfm?action=form&amp;id="
+      hrefKey="id" 
+      sort="yes"
+      >
+      <cfgridcolumn name="id" display="no" />
+      <cfgridcolumn name="name" header="Name" />
+      <cfgridcolumn name="city" header="City" />
+      <cfgridcolumn name="state" header="State" />
+</cfgrid>
+```
+
+## AJAX RESULTS USAGE EXAMPLE
 
 In your cfm file...
 ```html
@@ -91,7 +124,6 @@ In your cfm file...
       href="thispage.cfm?action=form&amp;id="
       hrefKey="id" 
       sort="yes"
-      cssAtBottom="false"
       >
       <cfgridcolumn name="id" display="no" />
       <cfgridcolumn name="name" header="Name" />
