@@ -26,7 +26,9 @@
 		customJS:      	{required:false,type:"any",default:"",hint:"Pass a single path to a js file, or an array of paths."},
 		customCSS:      	{required:false,type:"any",default:"",hint:"Pass a single path to a css file, or an array of paths."},
 		lengthChange:		{required:false,type="boolean",default=true,hint:"Show the per-page pulldown"},
-		compact:			{required:false,type="boolean",default=true,hint:"Set false for more padding/spacing."}
+		compact:			{required:false,type="boolean",default=true,hint:"Set false for more padding/spacing."},
+		defaultSortColumn:	{required:false,type="string",default="",hint:"Default column to sort by on load. If blank, it uses the first column."},
+		defaultSortDir:			{required:false,type="string",default="ASC",hint:"Sort direction on load."}
 	}/>
 	<cfset variables.children = [] />
 	<cfset _log = [] />
@@ -75,6 +77,9 @@
 				<cfset attributes.firstVisibleColumn = col.getAttribute('name') />
 			</cfif>
 		</cfloop>
+		<cfif attributes.defaultSortColumn IS "">
+			<cfset attributes.defaultSortColumn = attributes.firstVisibleColumn />
+		</cfif>
 
 		<cfscript>
 			if(len(trim(generatedContent))) {
@@ -259,7 +264,7 @@
 							"autoWidth" : #attributes.autowidth#,
 							"ordering" : #truefalsetext(attributes.sort)#,
 							"lengthChange": #truefalsetext(attributes.lengthChange)#,
-							<cfif listFindNoCase(attributes.columns,attributes.firstVisibleColumn)>"order" : [[#listFindNoCase(attributes.columns,attributes.firstVisibleColumn)-1#, 'asc']],</cfif>
+							<cfif listFindNoCase(attributes.columns,attributes.firstVisibleColumn)>"order" : [[#listFindNoCase(attributes.columns,attributes.defaultSortColumn)-1#, '#attributes.defaultSortDir#']],</cfif>
 							"searching" : #truefalsetext(attributes.search)#,
 							"drawCallback": function(settings) {
 								<cfif attributes.href GT "">
@@ -386,8 +391,8 @@
                 // these are here for backward compatibility and default sorting (on binds).
                 d.pageSize = #attributes.pageSize#;
                 d.page = 1;
-                d.gridsortcolumn = '#attributes.firstVisibleColumn#';
-                d.gridsortdir = 'ASC';
+                d.gridsortcolumn = '#attributes.defaultSortColumn#';
+                d.gridsortdir = '#attributes.defaultSortDir#';
                 <!--- Here, we will pass anything that was in the bind arguments. The built-in 
                 CFGRID {cfgrid...} values are ignored because they are not valid for Datatables. --->
                 <cfloop from="1" to="#arraylen(binddata.args)#" index="a">
