@@ -44,6 +44,8 @@ Custom Attributes for this Lucee version!
 - customCSS="path or array of paths", custom CSS files to include on the page. For example, your custom Datatables styles. (default, none)
 - lengthChange="yes/no", Show the select box to pick items per page (default, yes)
 - compact="yes/no", For Datatables CSS, use the compact style, takes up less space (default, yes)
+- defaultSortColumn="column name", Default column to sort by on load. If blank, it uses the first column.
+- defaultSortDir="ASC or DESC", Sort direction on load.
 
 You can use includeDatatablesCSS="no" and then customCSS="http://pathto/my.css", for example, to use your own style sheet or custom Datatables CSS.
 
